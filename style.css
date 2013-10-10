@@ -11,7 +11,8 @@ body
   padding: 0px;
   font-family:'Lucida Grande', 'Hiragino Kaku Gothic ProN', 'ヒラギノ角ゴ ProN W3', Meiryo, メイリオ, sans-serif;
   color: steelblue;
-  background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAABCAYAAACCGM0BAAAABHNCSVQICAgIfAhkiAAAAAFzUkdCAK7OHOkAAAAEZ0FNQQAAsY8L/GEFAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAABJJREFUGFdjdGva8p9hxAAGBgBQaQJ9Tnri7wAAAABJRU5ErkJggg==) repeat-y;
+  background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAABCAYAAACCGM0BAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAITgAACE4BjDEA7AAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAABBSURBVAiZY3Rr3DJjZ513BgMacG/e+p+BgeHizlpvAwYGBga3xm0GjEz/z6Org4Gdtd6M7s1bLzAwMOjjUjMYAAAL8hB9egGWPQAAAABJRU5ErkJggg==);
+  background-repeat: repeat-y;
   background-color: lavender;
   background-position: right;
 
@@ -39,10 +40,19 @@ header
   position: relative;
 }
 
+header a.icon
+{
+  width: 60px;
+  height: 60px;
+  display: block;
+}
+
 header div.icon
 {
   width: 60px;
   height: 60px;
+  margin: 0px;
+  padding: 0px;
   background: url(data:image/png;base64,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);
 }
 
@@ -322,7 +332,15 @@ div.fileview table.fileinfo td.dl div#dlbutton
   background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAJOgAACToB8GSSSgAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAADFSURBVDiNzZRBCsIwEEV/xE29UdULeIPuPIJ4kYpHcOcNPIJnaA/iLjw3oaQhaUep4MCQDDP/wU9IHKAlY7Uo7RfAdVIfJB0/ZNwkPYYKiLMCOuzRBc3ASIECtoA3wHyYHelzQAGtAdjmtCVgBfQTsD61OgcUsCtY96GX1U0BS9azVq3A1HrRqhUoYB9s+rCfnHfY3vIlrOe5QQfco/oq6ZmZ24T1lenVkk7xS4mjMRxBmk0M+PnnUH/BGGkcxluxxv9/sG/gHW1+gSHHIwAAAABJRU5ErkJggg==);
   width: 20px;
   height: 20px;
-  margin: 5px auto;
+  margin: 0px;
+}
+
+div.fileview table.fileinfo td.dl a
+{
+  width: 20px;
+  height: 20px;
+  display: block;
+  margin: 5px;
 }
 
 div.fileview table.fileinfo td.permission

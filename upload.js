@@ -74,27 +74,32 @@ function UploadFile( address, path, file )
       // TODO:
       var boundary = "----SDDUploaderFormBoundaryGhexpz6PUOeIP3Sc";
 
-      // File data.
+      // Multipart header.
       MultipartHeader( httpobj, boundary );
 
+      // File data.
       data += MultipartFile( reader, 'upfile', file, boundary );
 
       // Path data.
       data += MultipartData( 'path', path, boundary );
 
+      // Multipart footer.
       data += MultipartFooter( boundary )
 
+      // Send data.
       httpobj.sendAsBinary( data );
 
       // Result.
       var result = JSON.parse( httpobj.responseText );
 
-      var loader = document.getElementById( 'loader' );
-
       ++UPLOADED;
+
+      // Update progress bar.
+      var loader = document.getElementById( 'loader' );
 
       var failid = '';
       if ( result.result !=  'success' ){ failid = ' class="error"' }
+
       loader.innerHTML += '<div style="width:' + ( 100 / UPLOADMAX ) + '%;"' + failid + '></div>';
 
       if ( UPLOADMAX <= UPLOADED ){ window.location.reload(); }
