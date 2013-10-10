@@ -7,13 +7,16 @@ function Drop( event )
 {
   var files = event.dataTransfer.files;
 
+  var darea = document.getElementById( 'dragupload' );
+  darea.addEventListener( 'dragover', null, false );
+  darea.addEventListener( "drop", null, false );
+
   var path = document.getElementById( 'path' ).value;
 
-  document.getElementById( 'dragupload' ).innerHTML = '<div id="loader"></div>';//<div id="progress"></div>
+  document.getElementById( 'dragupload' ).innerHTML = '<div id="loader"></div>';
 
   UPLOADED = 0;
   UPLOADMAX = files.length;
-  //LOADERLENGTH = document.getElementById( 'loader' ).clientWidth;
 
   var i;
   for ( i = 0 ; i < UPLOADMAX ; ++i )
@@ -50,19 +53,6 @@ function HttpCreate()
   } catch( e )
   {
     httpobj = null;
-    /*try
-    {
-      httpObject = new ActiveXObject( "Msxml2.XMLHTTP" );
-    } catch( e )
-    {
-      try
-      {
-        httpObject = new ActiveXObject( "Microsoft.XMLHTTP" );
-      } catch( e )
-      {
-        return null;
-      }
-    }*/
   }
 
   return httpobj;
@@ -77,37 +67,22 @@ function UploadFile( address, path, file )
     httpobj = HttpCreate();
     if ( httpobj )
     {
-
       var data = "";
 
       httpobj.open( "post", address, false );
 
-      // File data.
-
+      // TODO:
       var boundary = "----SDDUploaderFormBoundaryGhexpz6PUOeIP3Sc";
 
-      httpobj.setRequestHeader( "content-type", "multipart/form-data; boundary=" + boundary );
+      // File data.
+      MultipartHeader( httpobj, boundary );
 
-      data += "--" + boundary + "\r\n";
-
-      data += "Content-Disposition: form-data; name=\"upfile\"; filename=\"" + encodeURIComponent( file.name ) + "\"\r\n";
-
-      data += "Content-Type: "+ file.type + "\r\n";
-      data += "\r\n";
-
-
-      data += reader.result + "\r\n";
-
-      data += "--" + boundary + "\r\n";
+      data += MultipartFile( reader, 'upfile', file, boundary );
 
       // Path data.
+      data += MultipartData( 'path', path, boundary );
 
-      data += "Content-Disposition: form-data; name=\"path\"\r\n";
-      data += "\r\n";
-
-      data += encodeURIComponent( path ) + "\r\n";
-
-      data += "--" + boundary + "--";
+      data += MultipartFooter( boundary )
 
       httpobj.sendAsBinary( data );
 
@@ -132,6 +107,39 @@ function UploadFile( address, path, file )
   return null;
 }
 
+function MultipartHeader( httpobj, boundary )
+{
+  httpobj.setRequestHeader( "content-type", "multipart/form-data; boundary=" + boundary );
+}
+
+function MultipartFooter( boundary )
+{
+  return "--" + boundary + "--";
+}
+
+function MultipartData( name, data, boundary )
+{
+  var str = "--" + boundary + "\r\n";
+
+  str += "Content-Disposition: form-data; name=\"" + name + "\"\r\n";
+  str += "\r\n";
+  str += data + "\r\n";
+
+  return str;
+}
+
+function MultipartFile( reader, name, file, boundary )
+{
+  var str = "--" + boundary + "\r\n";
+
+  str += "Content-Disposition: form-data; name=\"" + name + "\"; filename=\"" + encodeURIComponent( file.name ) + "\"\r\n";
+  str += "Content-Type: "+ file.type + "\r\n";
+  str += "\r\n";
+  str += reader.result + "\r\n";
+
+  return str;
+}
+
 function Init()
 {
   var darea = document.getElementById( 'dragupload' );
@@ -140,8 +148,6 @@ function Init()
   {
     darea.addEventListener( 'dragover', DragOver, false );
     darea.addEventListener( "drop", Drop, false );
-    darea.addEventListener( 'ondragover', DragOver, false );
-    darea.addEventListener( "ondrop", Drop, false );
   } else if( darea.attachEvent )
   {
     darea.attachEvent( "ondragover", function(event){DragOver(event);} );

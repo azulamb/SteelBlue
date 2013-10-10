@@ -9,29 +9,7 @@ use FileViewer;
 # Setting                              #
 ########################################
 
-# Page title
-our $TITLE = 'SteelBlue';
-
-# Script path.
-our $SCRIPT = './index.cgi';
-
-# Document root.
-our $DOCROOT = '.';
-
-# Base URL.
-our $BASEURL = '';
-
-# View item in page( 0 = max ).
-our $PAGENUM = 50;
-
-# Use text view file extension.
-our @EXTTXT = qw ( c cgi cpp css h hdml hpp htm html js pl pm py sh text txt );
-
-# Use image view file extension.
-our @EXTIMG = qw ( gif jpeg jpg ping png );
-
-# Downloader.
-our $DOWNLOADER = './downloader.cgi';
+require './setting.pl';
 
 ########################################
 # Program                              #
@@ -69,7 +47,8 @@ sub Main()
 
   $html .= &HtmlUploader( $path );
 
-  if ( -f $DOCROOT . '/' . $path )
+  $html .= '<div class="maincontent">';
+  if ( -f $STEELBLUESETTING::DOCROOT . '/' . $path )
   {
     # File view
     $html .= &HtmlFileView( $path );
@@ -78,6 +57,7 @@ sub Main()
     # Directory view.
     $html .= &HtmlDirectory( $path, $page );
   }
+  $html .= '</div>';
 
   $html .= &HtmlFoot();
 
@@ -122,9 +102,9 @@ AAD/8wAA//8AAA==" />
 <body>
   <header><a href="%s"><div class="icon"></div></a><h1><a href="%s">%s</a></h1></header>
 ',
-  $TITLE,
-  $SCRIPT,
-  $SCRIPT, $TITLE );
+  $STEELBLUESETTING::TITLE,
+  $STEELBLUESETTING::SCRIPT,
+  $STEELBLUESETTING::SCRIPT, $STEELBLUESETTING::TITLE );
 }
 
 sub HtmlToolbar()
@@ -134,8 +114,8 @@ sub HtmlToolbar()
 
   $html .= '  <div class="toolbar">' . "\n";
   $html .= '    <table><tr>' . "\n";
-  $html .= sprintf( '      <td class="back"><a href="%s?path=%s"><div id="backbutton"></div></a></td>', $SCRIPT, &URLEncode( &UpDirectory( $path ) ) ) . "\n";
-  $html .= sprintf( '      <td class="address">%s%s</td>', $BASEURL, $path ) . "\n";
+  $html .= sprintf( '      <td class="back"><a href="%s?path=%s"><div id="backbutton"></div></a></td>', $STEELBLUESETTING::SCRIPT, &URLEncode( &UpDirectory( $path ) ) ) . "\n";
+  $html .= sprintf( '      <td class="address">%s%s</td>', $STEELBLUESETTING::BASEURL, $path ) . "\n";
   $html .= '    </tr></table>' . "\n";
   $html .= '  </div>' . "\n";
 
@@ -144,7 +124,9 @@ sub HtmlToolbar()
 
 sub HtmlFoot()
 {
-  return sprintf( '</body>
+  return sprintf( '
+  <footer><a href="https://github.com/HirokiMiyaoka/SteelBlue">SteelBlue</a> made by Hiroki @ (azulitenet/Hiroki_Miyaoka)</footer>
+</body>
 </html>' );
 }
 
@@ -154,12 +136,13 @@ sub HtmlUploader()
   my $html = '';
 
   $html .= sprintf( '  <div class="uploader" id="dragupload">' ) . "\n";
+  $html .= sprintf( '  <p>Select file or drag & drop files in this area.</p>' ) . "\n";
   $html .= sprintf( '    <form action="./uploader.cgi" method="post" enctype="multipart/form-data">' ) . "\n";
   $html .= sprintf( '      <table><tr><td>' ) . "\n";
   $html .= sprintf( '      <input type="file" name="upfile" class="upfile" />' ) . "\n";
   $html .= sprintf( '      </td><td>' ) . "\n";
   $html .= sprintf( '      <input type="hidden" name="path" value="%s" id="path" />', &URLEncode( $path ) ) . "\n";
-  $html .= sprintf( '      <input type="hidden" name="ref" value="%s" />', &URLEncode( $SCRIPT . '?path=' . &URLEncode( $path ) ) ) . "\n";
+  $html .= sprintf( '      <input type="hidden" name="ref" value="%s" />', &URLEncode( $STEELBLUESETTING::SCRIPT . '?path=' . &URLEncode( $path ) ) ) . "\n";
   $html .= sprintf( '      <input type="submit" name="send" value="Uplaod" class="submit" />' ) . "\n";
   $html .= sprintf( '      </td></tr></table>' ) . "\n";
   $html .= sprintf( '    </form>' ) . "\n";
@@ -171,7 +154,7 @@ sub HtmlUploader()
 sub HtmlDirectory()
 {
   my ( $path, $page ) = ( @_ );
-  my ( $num, @list ) = &LoadDirectory( $path, '', $page * $PAGENUM, ($page + 1) * $PAGENUM - 1 );
+  my ( $num, @list ) = &LoadDirectory( $path, '', $page * $STEELBLUESETTING::PAGENUM, ($page + 1) * $STEELBLUESETTING::PAGENUM - 1 );
   my $pagehtml = &HtmlPage( $page, $num );
   unless ( $path eq '' || $path =~ /(\/)$/ ){ $path .= '/'; }
 
@@ -192,7 +175,7 @@ sub HtmlDirectory()
     {
       # Directory.
       $html .= sprintf( '        <tr><td class="checkbox"><input type="checkbox"></td><td class="filename"><a href="%s?%s">%s</a></td><td class="time">-</td><td class="permission">%s</td><td class="dl">-</td></tr>%s',
-                        $SCRIPT, 'path=' . ( $_ eq '../' ? &UpDirectory( $path ) : &URLEncode( $_ )), $_,
+                        $STEELBLUESETTING::SCRIPT, 'path=' . ( $_ eq '../' ? &UpDirectory( $path ) : &URLEncode( $_ )), $_,
                         &Permission( $state[ 2 ] ),
                         "\n" );
     } else
@@ -201,10 +184,10 @@ sub HtmlDirectory()
       my $renewtime = &FormatTime( $state[ 9 ] );
 
       $html .= sprintf( '        <tr><td class="checkbox"><input type="checkbox"></td><td class="filename"><a href="%s?%s">%s</a></td><td class="time">%s</td><td class="permission">%s</td><td class="dl"><a href="%s?%s">DL</a></td></tr>%s',
-                        $SCRIPT, 'path=' . &URLEncode( $path . $_), $_,
+                        $STEELBLUESETTING::SCRIPT, 'path=' . &URLEncode( $path . $_), $_,
                         $renewtime,
                         &Permission( $state[ 2 ] ),
-                        $DOWNLOADER, 'p=' . &URLEncode( $path . $_),
+                        $STEELBLUESETTING::DOWNLOADER, 'p=' . &URLEncode( $path . $_),
                         "\n" );
     }
   }
@@ -221,7 +204,7 @@ sub HtmlPage()
 {
   my ( $now, $item ) = ( @_ );
   my $html = '';
-  my $urlbase = sprintf( '%s?path=%s', $SCRIPT, &URLEncode( $GET{ 'path' } ) );
+  my $urlbase = sprintf( '%s?path=%s', $STEELBLUESETTING::SCRIPT, &URLEncode( $GET{ 'path' } ) );
 
   $html .= '    <div class="page">';
 
@@ -239,12 +222,12 @@ sub HtmlPage()
     $html .= sprintf( '<a href="%s&page=%d"></a> ', $urlbase, $i );
   }
   $html .= sprintf( '<b>%d</b>', $now );
-  for ( ; $i * $PAGENUM < $item ; ++$i )
+  for ( ; $i * $STEELBLUESETTING::PAGENUM < $item ; ++$i )
   {
     $html .= sprintf( ' <a href="%s&page=%d"></a>', $urlbase, $i );
   }
 
-  if ( $PAGENUM * ($now + 1) < $item )
+  if ( $STEELBLUESETTING::PAGENUM * ($now + 1) < $item )
   {
     $html .= sprintf( ' <a href="%s&page=%d">&gt;&gt;</a>', $urlbase, $now + 1 );
   } else
@@ -263,17 +246,17 @@ sub HtmlFileView()
 
   my $html = '';
 
-  my $fv = FileViewer->new( $DOCROOT . '/' . $path );
+  my $fv = FileViewer->new( $STEELBLUESETTING::DOCROOT . '/' . $path );
 
-  $fv->AddExtTxt( @EXTTXT );
-  $fv->AddExtImg( @EXTIMG );
+  $fv->AddExtTxt( @STEELBLUESETTING::EXTTXT );
+  $fv->AddExtImg( @STEELBLUESETTING::EXTIMG );
 
   $html .= '<div class="fileview" id="textfile">';
   $html .= '<h2>' . $path . '</h2>';
 
-  my @state = stat( $DOCROOT . '/' . $path );
+  my @state = stat( $STEELBLUESETTING::DOCROOT . '/' . $path );
   $html .= '<table class="fileinfo">' . "\n" . '<tr>' . "\n";
-  $html .= sprintf( '<td class="dl"><a href="%s?%s"><div id="dlbutton"></a></div></td>', $DOWNLOADER, '&p=' . &URLEncode( $path ) ) . "\n";
+  $html .= sprintf( '<td class="dl"><a href="%s?%s"><div id="dlbutton"></a></div></td>', $STEELBLUESETTING::DOWNLOADER, '&p=' . &URLEncode( $path ) ) . "\n";
   $html .= sprintf( '<td>%dB</td>', $fv->GetFileSize() ) . "\n";
   $html .= sprintf( '<td>%s:%s</td>', &Getpwuid( $state[ 4 ] ), &Getgrgid( $state[ 5 ] ) ) . "\n";
   $html .= sprintf( '<td class="permission">%s</td>', &Permission( $state[ 2 ] ) ) . "\n";
@@ -322,7 +305,7 @@ sub LoadDirectory()
 
   $dir_ =~ s/(\/)$//;
 
-  my $dir = $DOCROOT;
+  my $dir = $STEELBLUESETTING::DOCROOT;
 
   if ( $dir_ ne '' && $dir_ ne '.' )
   {

@@ -11,11 +11,10 @@ use Encode::Guess qw/euc-jp shiftjis iso-2022-jp utf8/;
 # Setting                              #
 ########################################
 
-# Document root.
-our $DOCROOT = '.';
+require './setting.pl';
 
-# Force download.
-our $DOWNLOAD = 1;
+#our $DOCROOT = '.';
+#our $DOWNLOAD = 1;
 
 # MIME Type table.
 our %MIMETYPE =
@@ -367,7 +366,7 @@ sub Main()
   my %GET = &DecodeGet( $query );
 
   if ( $GET{ 'p' } =~ /(\.\.)/ || $GET{ 'p' } =~ /^(\/)/){ $GET{ 'p' } = ''; }
-  my $path = $DOCROOT . '/' . $GET{ 'p' };
+  my $path = $STEELBLUESETTING::DOCROOT . '/' . $GET{ 'p' };
 
   my $name = $GET{ 'n' };
   if ( $name eq '' )
@@ -403,7 +402,7 @@ sub OutputFile()
   # HTTP Header.
   printf( 'Content-Length: %d%s', $size, "\n" );
   printf( 'Content-Type: %s%s', $MIMETYPE{ $ext }->{ 'mime' }, "\n" );
-  if ( $size > 0 && $DOWNLOAD )
+  if ( $size > 0 && $STEELBLUESETTING::DOWNLOAD )
   {
     printf( 'Content-Disposition: attachment; filename="%s"%s', $name, "\n" );
   }
