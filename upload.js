@@ -1,161 +1,195 @@
-function DragOver( event )
-{
-  event.preventDefault();
-}
+var SteelBlue;
+(function (SteelBlue) {
+    var FileUploader = (function () {
+        function FileUploader() {
+            this.httpobj = null;
+            this.reader = null;
+            this.callback = null;
 
-function Drop( event )
-{
-  var files = event.dataTransfer.files;
-
-  var darea = document.getElementById( 'dragupload' );
-  darea.addEventListener( 'dragover', null, false );
-  darea.addEventListener( "drop", null, false );
-
-  var path = document.getElementById( 'path' ).value;
-
-  document.getElementById( 'dragupload' ).innerHTML = '<div id="loader"></div>';
-
-  UPLOADED = 0;
-  UPLOADMAX = files.length;
-
-  var i;
-  for ( i = 0 ; i < UPLOADMAX ; ++i )
-  {
-    UploadFile( "./uploader.cgi", path, files[ i ] );
-  }
-  event.preventDefault();
-}
-
-function HttpCreate()
-{
-  var httpobj = null;
-
-  if ( window.navigator.userAgent.toLowerCase().indexOf( "chrome" ) > -1)
-  {
-    XMLHttpRequest.prototype.sendAsBinary = function( datastr )
-      {
-        function byteValue( x ) { return x.charCodeAt( 0 ) & 0xff; }
-        var ords = Array.prototype.map.call( datastr, byteValue );
-        var ui8a = new Uint8Array( ords );
-        try
-        {
-          this.send( ui8a );
-        } catch( error )
-        {
-          this.send( ui8a.buffer );
+            if (FileUploader.boundary == "") {
+                FileUploader.boundary = "----SDDUploaderFormBoundaryGhexpz6PUOeIP3Sc";
+            }
+            FileUploader.self = this;
         }
-      }
-  }
+        FileUploader.prototype.SetCallback = function (cbfunc) {
+            this.callback = cbfunc;
+        };
 
-  try
-  {
-    httpobj = new XMLHttpRequest();
-  } catch( e )
-  {
-    httpobj = null;
-  }
+        FileUploader.prototype.UploadFile = function (address, path, file) {
+            this.httpobj = this.HttpCreate();
+            this.httpobj.open("post", address, false);
+            if (this.httpobj == null) {
+                return null;
+            }
 
-  return httpobj;
-}
+            this.file = file;
 
-function UploadFile( address, path, file )
-{
+            this.reader = new FileReader();
+            this.reader.onload = function (event) {
+                FileUploader.self.FileLoader(event, path);
+            };
+            this.reader.readAsBinaryString(file);
+            return this.httpobj;
+        };
 
-  var reader = new FileReader();
-  reader.onload = function( event )
-  {
-    httpobj = HttpCreate();
-    if ( httpobj )
-    {
-      var data = "";
+        FileUploader.prototype.FileLoader = function (event, path) {
+            var data = "";
 
-      httpobj.open( "post", address, false );
+            this.MultipartHeader();
 
-      // TODO:
-      var boundary = "----SDDUploaderFormBoundaryGhexpz6PUOeIP3Sc";
+            data += this.MultipartFile('upfile', this.file);
 
-      // Multipart header.
-      MultipartHeader( httpobj, boundary );
+            data += this.MultipartData('path', path);
 
-      // File data.
-      data += MultipartFile( reader, 'upfile', file, boundary );
+            data += this.MultipartFooter();
 
-      // Path data.
-      data += MultipartData( 'path', path, boundary );
+            this.httpobj.sendAsBinary(data);
 
-      // Multipart footer.
-      data += MultipartFooter( boundary )
+            if (this.callback != null) {
+                this.callback(this.httpobj.responseText);
+            }
+        };
 
-      // Send data.
-      httpobj.sendAsBinary( data );
+        FileUploader.prototype.HttpCreate = function () {
+            if (window.navigator.userAgent.toLowerCase().indexOf("chrome") > -1) {
+                XMLHttpRequest.prototype.sendAsBinary = function (datastr) {
+                    function byteValue(x) {
+                        return x.charCodeAt(0) & 0xff;
+                    }
+                    var ords = Array.prototype.map.call(datastr, byteValue);
+                    var ui8a = new Uint8Array(ords);
+                    try  {
+                        this.send(ui8a);
+                    } catch (error) {
+                        this.send(ui8a.buffer);
+                    }
+                };
+            }
 
-      // Result.
-      var result = JSON.parse( httpobj.responseText );
+            try  {
+                this.httpobj = new XMLHttpRequest();
+            } catch (e) {
+                this.httpobj = null;
+            }
 
-      ++UPLOADED;
+            return this.httpobj;
+        };
 
-      // Update progress bar.
-      var loader = document.getElementById( 'loader' );
+        FileUploader.prototype.MultipartHeader = function () {
+            this.httpobj.setRequestHeader("content-type", "multipart/form-data; boundary=" + FileUploader.boundary);
+        };
 
-      var failid = '';
-      if ( result.result !=  'success' ){ failid = ' class="error"' }
+        FileUploader.prototype.MultipartFooter = function () {
+            return "--" + FileUploader.boundary + "--";
+        };
 
-      loader.innerHTML += '<div style="width:' + ( 100 / UPLOADMAX ) + '%;"' + failid + '></div>';
+        FileUploader.prototype.MultipartData = function (name, data) {
+            var str = "--" + FileUploader.boundary + "\r\n";
+            str += "Content-Disposition: form-data; name=\"" + name + "\"\r\n";
+            str += "\r\n";
+            str += data + "\r\n";
+            return str;
+        };
 
-      if ( UPLOADMAX <= UPLOADED ){ window.location.reload(); }
-    }
+        FileUploader.prototype.MultipartFile = function (name, file) {
+            var str = "--" + FileUploader.boundary + "\r\n";
 
-    return 0;
-  }
-  reader.readAsBinaryString( file );
+            str += "Content-Disposition: form-data; name=\"" + name + "\"; filename=\"" + encodeURIComponent(file.name) + "\"\r\n";
+            str += "Content-Type: " + file.type + "\r\n";
+            str += "\r\n";
+            str += this.reader.result + "\r\n";
 
-  return null;
-}
+            return str;
+        };
+        FileUploader.boundary = "";
+        return FileUploader;
+    })();
+    SteelBlue.FileUploader = FileUploader;
 
-function MultipartHeader( httpobj, boundary )
-{
-  httpobj.setRequestHeader( "content-type", "multipart/form-data; boundary=" + boundary );
-}
+    var FileUploaderManagement = (function () {
+        function FileUploaderManagement(id_area, id_loader, id_path) {
+            this.darea = document.getElementById(id_area);
+            this.larea = document.getElementById(id_loader);
+            this.parea = document.getElementById(id_path);
+            FileUploaderManagement.self = this;
+            if (this.darea.addEventListener) {
+                this.darea.addEventListener('dragover', function (event) {
+                    FileUploaderManagement.self.DragOver(event);
+                }, false);
+                this.darea.addEventListener('drop', function (event) {
+                    FileUploaderManagement.self.Drop(event);
+                }, false);
+            } else if (this.darea.attachEvent) {
+                this.darea.attachEvent('ondragover', function (event) {
+                    FileUploaderManagement.self.DragOver(event);
+                });
+                this.darea.attachEvent('ondrop', function (event) {
+                    FileUploaderManagement.self.Drop(event);
+                });
+            }
+            this.UPLOADED = 0;
+            this.UPLOADMAX = 0;
+        }
+        FileUploaderManagement.prototype.DragOver = function (event) {
+            event.preventDefault();
+        };
 
-function MultipartFooter( boundary )
-{
-  return "--" + boundary + "--";
-}
+        FileUploaderManagement.prototype.Drop = function (event) {
+            event.preventDefault();
 
-function MultipartData( name, data, boundary )
-{
-  var str = "--" + boundary + "\r\n";
+            this.files = event.dataTransfer.files;
 
-  str += "Content-Disposition: form-data; name=\"" + name + "\"\r\n";
-  str += "\r\n";
-  str += data + "\r\n";
+            if (this.darea.addEventListener) {
+                this.darea.addEventListener('dragover', null, false);
+                this.darea.addEventListener('drop', null, false);
+            } else if (this.darea.attachEvent) {
+                this.darea.attachEvent('ondragover', null);
+                this.darea.attachEvent('ondrop', null);
+            }
 
-  return str;
-}
+            this.path = this.parea.value;
 
-function MultipartFile( reader, name, file, boundary )
-{
-  var str = "--" + boundary + "\r\n";
+            this.larea.innerHTML = '<div id="loader"></div>';
 
-  str += "Content-Disposition: form-data; name=\"" + name + "\"; filename=\"" + encodeURIComponent( file.name ) + "\"\r\n";
-  str += "Content-Type: "+ file.type + "\r\n";
-  str += "\r\n";
-  str += reader.result + "\r\n";
+            this.UPLOADED = 0;
+            this.UPLOADMAX = this.files.length;
 
-  return str;
-}
+            var uf = new FileUploader();
+            uf.UploadFile("./uploader.cgi", this.path, this.files[this.UPLOADED]);
+            uf.SetCallback(function (msg) {
+                FileUploaderManagement.self.NextUpload(msg);
+            });
+        };
 
-function Init()
-{
-  var darea = document.getElementById( 'dragupload' );
+        FileUploaderManagement.prototype.NextUpload = function (msg) {
+            var result = JSON.parse(msg);
 
-  if( darea.addEventListener )
-  {
-    darea.addEventListener( 'dragover', DragOver, false );
-    darea.addEventListener( "drop", Drop, false );
-  } else if( darea.attachEvent )
-  {
-    darea.attachEvent( "ondragover", function(event){DragOver(event);} );
-    darea.attachEvent( "ondrop", Drop );
-  }
+            var loader = document.getElementById('loader');
+
+            var failid = '';
+            if (result.result != 'success') {
+                failid = ' class="error"';
+            }
+
+            loader.innerHTML += '<div style="width:' + (100 / this.UPLOADMAX) + '%;"' + failid + '></div>';
+
+            ++this.UPLOADED;
+
+            if (this.UPLOADED < this.UPLOADMAX) {
+                var uf = new FileUploader();
+                uf.UploadFile("./uploader.cgi", this.path, this.files[this.UPLOADED]);
+                uf.SetCallback(function (msg) {
+                    FileUploaderManagement.self.NextUpload(msg);
+                });
+            } else {
+                window.location.reload();
+            }
+        };
+        return FileUploaderManagement;
+    })();
+    SteelBlue.FileUploaderManagement = FileUploaderManagement;
+})(SteelBlue || (SteelBlue = {}));
+
+function Init() {
+    new SteelBlue.FileUploaderManagement('dragupload', 'dragupload', 'path');
 }

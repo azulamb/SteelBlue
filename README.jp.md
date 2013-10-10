@@ -20,8 +20,14 @@ SteelBlueはシンプルはWebファイラーです。
 また以下のファイルもセットでアップロードしてください。
 
 * FileViewer.pm
+* setting.pl
 * style.css
 * upload.js
 
-その他設定についてはスクリプト内部を参照してください。
+設定については基本的にsetting.plを編集してください。
+
+## 備考
+
+JavaScriptはTypeScriptを使って書き直しました。
+また、諸事情により XMLHttpRequest.prototype.sendAsBinary の定義部分でエラーが発生していますが、一応生成できているので良しとします。何とかしたいです。
 
