@@ -9,6 +9,7 @@ use CGI;
 ########################################
 
 require './setting.pl';
+
 #our $DOCROOT = '.';
 #our $DIRPARMISIION  = 0705;
 #our $BUFFERSIZE = 1024;

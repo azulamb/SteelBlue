@@ -11,6 +11,15 @@ use FileViewer;
 
 require './setting.pl';
 
+#our $DOCROOT = '.';
+#our $TITLE = 'SteelBlue';
+#our $SCRIPT = './index.cgi';
+#our $BASEURL = '';
+#our $PAGENUM = 50;
+#our @EXTTXT = qw ( c cgi cpp css h hdml hpp htm html js pl pm py sh text txt );
+#our @EXTIMG = qw ( gif jpeg jpg ping png );
+#our $DOWNLOADER = './downloader.cgi';
+
 ########################################
 # Program                              #
 ########################################
@@ -100,7 +109,7 @@ AAD/8wAA//8AAA==" />
   </script>
  </head>
 <body>
-  <header><a href="%s"><div class="icon"></div></a><h1><a href="%s">%s</a></h1></header>
+  <header><a href="%s" class="icon"><div class="icon"></div></a><h1><a href="%s">%s</a></h1></header>
 ',
   $STEELBLUESETTING::TITLE,
   $STEELBLUESETTING::SCRIPT,
@@ -164,18 +173,18 @@ sub HtmlDirectory()
   $html .= $pagehtml;
   $html .= '    <table>' . "\n";
   $html .= '      <thead>' . "\n";
-  $html .= sprintf( '        <tr><td class="checkbox" id="checkbox"><input type="checkbox"></td><td class="filename" id="filename">ファイル名</td><td class="time" id="time">更新時間</td><td class="permission" id="permission">権限</td><td class="dl" id="dl">DL</td></tr>%s', "\n" );
+  $html .= sprintf( '        <tr><td class="checkbox" id="checkbox"><input type="checkbox"></td><td class="filename" id="filename">File</td><td class="time" id="time">Renewal time</td><td class="permission" id="permission">Permission</td><td class="dl" id="dl">DL</td></tr>%s', "\n" );
   $html .= '      </thead>' . "\n";
 
   $html .= '      <tbody>' . "\n";
   foreach ( @list )
   {
-    my @state = stat( $path . $_ );
+    my @state = stat( $STEELBLUESETTING::DOCROOT . '/' . $path . $_ );
     if ( $_ =~ /(\/)$/ )
     {
       # Directory.
       $html .= sprintf( '        <tr><td class="checkbox"><input type="checkbox"></td><td class="filename"><a href="%s?%s">%s</a></td><td class="time">-</td><td class="permission">%s</td><td class="dl">-</td></tr>%s',
-                        $STEELBLUESETTING::SCRIPT, 'path=' . ( $_ eq '../' ? &UpDirectory( $path ) : &URLEncode( $_ )), $_,
+                        $STEELBLUESETTING::SCRIPT, 'path=' . ( $_ eq '../' ? &UpDirectory( $path ) : &URLEncode( $path . $_ )), $_,
                         &Permission( $state[ 2 ] ),
                         "\n" );
     } else
@@ -256,7 +265,7 @@ sub HtmlFileView()
 
   my @state = stat( $STEELBLUESETTING::DOCROOT . '/' . $path );
   $html .= '<table class="fileinfo">' . "\n" . '<tr>' . "\n";
-  $html .= sprintf( '<td class="dl"><a href="%s?%s"><div id="dlbutton"></a></div></td>', $STEELBLUESETTING::DOWNLOADER, '&p=' . &URLEncode( $path ) ) . "\n";
+  $html .= sprintf( '<td class="dl"><a href="%s?%s"><div id="dlbutton"></div></a></td>', $STEELBLUESETTING::DOWNLOADER, '&p=' . &URLEncode( $path ) ) . "\n";
   $html .= sprintf( '<td>%dB</td>', $fv->GetFileSize() ) . "\n";
   $html .= sprintf( '<td>%s:%s</td>', &Getpwuid( $state[ 4 ] ), &Getgrgid( $state[ 5 ] ) ) . "\n";
   $html .= sprintf( '<td class="permission">%s</td>', &Permission( $state[ 2 ] ) ) . "\n";
