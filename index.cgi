@@ -163,7 +163,8 @@ sub HtmlUploader()
 sub HtmlDirectory()
 {
   my ( $path, $page ) = ( @_ );
-  my ( $num, @list ) = &LoadDirectory( $path, '', $page * $STEELBLUESETTING::PAGENUM, ($page + 1) * $STEELBLUESETTING::PAGENUM - 1 );
+  my ( $dnum, $fnum, @list ) = &LoadDirectory( $path, '', $page * $STEELBLUESETTING::PAGENUM, ($page + 1) * $STEELBLUESETTING::PAGENUM - 1 );
+  my $num = $dnum + $fnum;
   my $pagehtml = &HtmlPage( $page, $num );
   unless ( $path eq '' || $path =~ /(\/)$/ ){ $path .= '/'; }
 
@@ -172,9 +173,14 @@ sub HtmlDirectory()
   $html .= '  <div class="filelist">' . "\n";
   $html .= $pagehtml;
   $html .= '    <table>' . "\n";
+
   $html .= '      <thead>' . "\n";
-  $html .= sprintf( '        <tr><td class="checkbox" id="checkbox"><input type="checkbox"></td><td class="filename" id="filename">File</td><td class="time" id="time">Renewal time</td><td class="permission" id="permission">Permission</td><td class="dl" id="dl">DL</td></tr>%s', "\n" );
+  $html .= sprintf( '        <tr><td class="checkbox" id="checkbox"><input type="checkbox"></td><td class="filename" id="filename">Name</td><td class="time" id="time">Update</td><td class="permission" id="permission">Permission</td><td class="dl" id="dl">DL</td></tr>%s', "\n" );
   $html .= '      </thead>' . "\n";
+
+  $html .= '      <tfoot>' . "\n";
+  $html .= sprintf( '        <tr><td colspan="5">Directory:%d, File:%d, Total:%d</td></tr>%s', $dnum, $fnum, $num, "\n" );
+  $html .= '      </tfoot>' . "\n";
 
   $html .= '      <tbody>' . "\n";
   foreach ( @list )
@@ -352,7 +358,9 @@ sub LoadDirectory()
 
   push( @list, sort{ $a cmp $b }( @dirs ) );
   if ( $dir_ ne '' ){ unshift( @list, '../' ); }
+  my $dirsnum = scalar( @list );
   push( @list, sort{ $a cmp $b }( @files ) );
+  my $filesnum = scalar( @files );
 
   if ( scalar( @list ) <= $start ){ return (); }
 
@@ -360,7 +368,7 @@ sub LoadDirectory()
 
   if ( scalar( @list ) <= $end ){ $end = scalar( @list ) - 1; }
 
-  return ( scalar( @list ), @list[ $start .. $end ] );
+  return ( $dirsnum, $filesnum, @list[ $start .. $end ] );
 }
 
 sub FormatTime()

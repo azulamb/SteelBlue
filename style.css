@@ -223,12 +223,14 @@ div.filelist table
 {
   width: 800px;
   background-color: lightsteelblue;
+  border-collapse: collapse;
 }
 
 div.filelist table tr td
 {
   font-size: 14px;
   background-color: white;
+  border: solid 1px lightsteelblue;
 }
 
 div.filelist table tr tbody td
@@ -266,6 +268,13 @@ div.filelist table thead td#dl
   width: 30px;
 }
 
+div.filelist table tfoot td
+{
+  background-color: steelblue;
+  color: white;
+  text-align: right;
+}
+
 div.filelist table td.checkbox
 {
   text-align: center;
@@ -289,6 +298,11 @@ div.filelist table td.permission
 div.filelist table td.dl
 {
   text-align: center;
+}
+
+div.filelist table td.dl a
+{
+  text-decoration: none;
 }
 
 div.fileview
