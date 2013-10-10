@@ -8,20 +8,12 @@ use CGI;
 # Setting                              #
 ########################################
 
-# Document root.
-our $DOCROOT = '.';
-
-# Default directory permission.
-our $DIRPARMISIION  = 0705;
-
-# Read buffer size.
-our $BUFFERSIZE = 1024;
-
-# Max upload size.
-our $MAXSIZE = 0;
-
-# JSON ContentType
-our $JSONCONTENTTYPE = 'Content-Type: application/json; charset=utf-8';
+require './setting.pl';
+#our $DOCROOT = '.';
+#our $DIRPARMISIION  = 0705;
+#our $BUFFERSIZE = 1024;
+#our $MAXSIZE = 0;
+#our $JSONCONTENTTYPE = 'Content-Type: application/json; charset=utf-8';
 
 ########################################
 # Program                              #
@@ -38,10 +30,10 @@ sub Main()
   my $upfile = ( $query->param( 'upfile' ) );
 
   # File size check.
-  if ( $MAXSIZE > 0 )
+  if ( $STEELBLUESETTING::MAXSIZE > 0 )
   {
     my ( @state ) = stat( $upfile );
-    if ( $MAXSIZE < $state[ 7 ] ){ return &Error( $ref, sprintf( 'File size over(max:%dB).', $MAXSIZE ) ); }
+    if ( $STEELBLUESETTING::MAXSIZE < $state[ 7 ] ){ return &Error( $ref, sprintf( 'File size over(max:%dB).', $STEELBLUESETTING::MAXSIZE ) ); }
   }
 
   # Path check.
@@ -52,7 +44,7 @@ sub Main()
   if ( $upfile =~ /(\/)$/ || $upfile =~ /([^ \da-zA-Z\_\-\+\=\(\) \"\'\:\;\&\%\$\#\@\!\?\<\>\[\]\{\}\.\,])/ ){ return &Error( $ref, sprintf( 'File name illegal.(%s)', $upfile ) ); }
 
   # Directory check & create filepath;
-  unless ( -d $DOCROOT . '/' . $path )
+  unless ( -d $STEELBLUESETTING::DOCROOT . '/' . $path )
   {
     my $name;
     my ( @el ) = split( /\//, $path );
@@ -71,7 +63,7 @@ sub Main()
     $path = shift( @el ) . '/';
     foreach ( @el )
     {
-      unless ( -d $DOCROOT . '/' . $path . $_ ){ mkdir( $DOCROOT . '/' . $path . $_, $DIRPARMISIION ); }
+      unless ( -d $STEELBLUESETTING::DOCROOT . '/' . $path . $_ ){ mkdir( $STEELBLUESETTING::DOCROOT . '/' . $path . $_, $STEELBLUESETTING::DIRPARMISIION ); }
       $path .= $_ . '/';
     }
 
@@ -82,7 +74,7 @@ sub Main()
     $path .= ( ($path =~ /(\/)$/) ? '' : '/' ) . $name;
   }
 
-  $path = $DOCROOT . '/' . $path;
+  $path = $STEELBLUESETTING::DOCROOT . '/' . $path;
 
   # File copy.
   if ( &CopyFile( $path, $upfile ) ){ return &Error( $ref, sprintf( 'Cannot create file.(%s)', $upfile ) ); }
@@ -100,7 +92,7 @@ sub CopyFile()
   if ( open( OUT, ">$path" ) )
   {
     binmode( OUT );
-    while( read( $upfile, $buffer, $BUFFERSIZE ) )
+    while( read( $upfile, $buffer, $STEELBLUESETTING::BUFFERSIZE ) )
     {
       print OUT $buffer;
     }
@@ -119,14 +111,14 @@ sub Success()
 {
   my ( $ref ) = ( @_ );
   if ( $ref ) { return &Location( $ref ); }
-  return sprintf( '%s{"result":"success"}', $JSONCONTENTTYPE . "\n\n" );
+  return sprintf( '%s{"result":"success"}', $STEELBLUESETTING::JSONCONTENTTYPE . "\n\n" );
 }
 
 sub Error()
 {
   my ( $ref, $msg ) = ( @_ );
   if ( $ref ) { return &Location( $ref ); }
-  return sprintf( '%s{"result":"failure","msg":"%s"}', $JSONCONTENTTYPE . "\n\n", $msg );
+  return sprintf( '%s{"result":"failure","msg":"%s"}', $STEELBLUESETTING::JSONCONTENTTYPE . "\n\n", $msg );
 }
 
 sub Decode()
