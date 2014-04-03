@@ -11,12 +11,18 @@ package STEELBLUESETTING;
 # Document root.
 our $DOCROOT = '.';
 
+# Use charset.
+our @CHARSET = ( 'euc-jp', 'shiftjis', 'iso-2022-jp', 'utf8' );
+
+# Permit command. ( 'chmod', 'mkdir', 'rm', 'mv' )
+our @CMD = ( 'chmod', 'mkdir', 'cp', 'rm', 'mv' );
+
 ########################################
 # index.cgi Setting                    #
 ########################################
 
 # Page title
-our $TITLE = 'SteelBlue';
+our $TITLE = 'HACK U WEB FILER';
 
 # Script path.
 our $SCRIPT = './index.cgi';

@@ -28,6 +28,17 @@ img
   border: 0px;
 }
 
+table
+{
+  background-color: lightsteelblue;
+  border-collapse: collapse;
+}
+
+td
+{
+  empty-cells: show;
+}
+
 header
 {
   color: white;
@@ -103,6 +114,7 @@ div.toolbar table tr td.back
   width: 30px;
   height: 30px;
   overflow: hidden;
+  background-color: steelblue;
 }
 
 div.toolbar table tr td.back div#backbutton
@@ -151,7 +163,7 @@ div.uploader form
   text-align: center;
 }
 
-div.uploader form input
+input
 {
   margin: 0px;
   border: 0px;
@@ -253,6 +265,11 @@ div.filelist table thead td#filename
   text-align: center;
 }
 
+div.filelist table thead td#size
+{
+  width: 100px;
+}
+
 div.filelist table thead td#time
 {
   width: 160px;
@@ -275,6 +292,17 @@ div.filelist table tfoot td
   text-align: right;
 }
 
+div.filelist table tfoot td.pwd
+{
+  text-align: left;
+  padding: 0px 10px;
+}
+
+div.filelist table tfoot td.items
+{
+  padding: 0px 5px;
+}
+
 div.filelist table td.checkbox
 {
   text-align: center;
@@ -283,6 +311,17 @@ div.filelist table td.checkbox
 div.filelist table td.filename
 {
   padding: 0px 10px;
+}
+
+div.filelist table td.size
+{
+  text-align: center;
+}
+
+div.filelist table tbody.filelist td.size
+{
+  text-align: right;
+  padding: 0px 5px;
 }
 
 div.filelist table td.time
@@ -305,10 +344,53 @@ div.filelist table td.dl a
   text-decoration: none;
 }
 
+div.diroperation
+{
+  width: 500px;
+  margin: 20px auto;
+  padding: 0px;
+  background-color: lightsteelblue;
+  padding-bottom: 10px;
+}
+
+div.diroperation h3
+{
+  background-color: steelblue;
+  color: white;
+  font-size: 1em;
+  margin: 0px;
+  text-align: center;
+}
+
+div.diroperation table
+{
+  margin: 15px auto 10px;
+}
+
+div.diroperation table tr td
+{
+  text-align: center;
+}
+
+div.diroperation table tr td:first-child
+{
+  text-align: right;
+}
+
+div.diroperation table tr td input
+{
+  width: 90%;
+}
+
+div.diroperation table tr td input.submit
+{
+  width: 90px;
+}
+
 div.fileview
 {
   width: 800px;
-  margin: 50px auto;
+  margin: 20px auto 50px;
   background-color: white;
 }
 
@@ -377,6 +459,28 @@ div.fileview div.view img
 {
   background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAALEwAACxMBAJqcGAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAACrSURBVHic7dpBEcAwDMTAppTCn0GCyYWxfUgETqPx0+ucMw9k7y3nn5eu/4ACaAFNAbSApgBaQFMALaApgBbQFEALaAqgBTQF0AKaAmgBTQG0gKYAWkBTAC2gKYAW0BRAC2gKoAU0a2bof8C9V853AQXQApoCaAFNAbSApgBaQFMALaApgBbQFEALaAqgBTQF0AKaAmgBTQG0gKYAWkBTAC2gKYAW0BRAC2g+3psK3mDP038AAAAASUVORK5CYII=);
   margin: 10px;
+}
+
+div.fileview div.view table
+{
+  background-color: steelblue;
+  margin: 20px auto;
+}
+
+div.fileview div.view table tr td
+{
+  background-color: white;
+}
+
+div.fileview div.view table thead tr td
+{
+  background-color: lightsteelblue;
+}
+
+div.fileview div.view table tr td:nth-child(1)
+{
+  background-color: lightsteelblue;
+  text-align: right;
 }
 
 div.fileview div.line
