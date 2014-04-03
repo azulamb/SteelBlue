@@ -2,7 +2,7 @@
 
 use strict;
 use warnings;
-
+no warnings qw(once);
 use FileViewer;
 
 ########################################
@@ -56,16 +56,22 @@ sub Main()
 
   $html .= &HtmlUploader( $path );
 
-  $html .= '<div class="maincontent">';
+  $html .= '<div class="maincontent">' . "\n";
+  $html .= sprintf( '    <form action="./operation.cgi" method="post">' ) . "\n";
   if ( -f $STEELBLUESETTING::DOCROOT . '/' . $path )
   {
     # File view
+    $html .= &HtmlDirectoryOperation( $path );
     $html .= &HtmlFileView( $path );
   } else
   {
     # Directory view.
     $html .= &HtmlDirectory( $path, $page );
+
+    $html .= &HtmlDirectoryOperation( $path );
   }
+  $html .= sprintf( '    </form>' ) . "\n";
+
   $html .= '</div>';
 
   $html .= &HtmlFoot();
@@ -160,7 +166,7 @@ sub HtmlUploader()
   return $html;
 }
 
-sub HtmlDirectory()
+sub HtmlDirectory_()
 {
   my ( $path, $page ) = ( @_ );
   my ( $dnum, $fnum, @list ) = &LoadDirectory( $path, '', $page * $STEELBLUESETTING::PAGENUM, ($page + 1) * $STEELBLUESETTING::PAGENUM - 1 );
@@ -211,6 +217,88 @@ sub HtmlDirectory()
   $html .= '    </table>' . "\n";
   $html .= $pagehtml;
   $html .= '  </div>' . "\n";
+
+  return $html;
+}
+
+sub HtmlDirectory()
+{
+  my ( $path, $page ) = ( @_ );
+  my ( $dnum, $fnum, @list ) = &LoadDirectory( $path, '', $page * $STEELBLUESETTING::PAGENUM, ($page + 1) * $STEELBLUESETTING::PAGENUM - 1 );
+  my $num = $dnum + $fnum;
+  my $pagehtml = &HtmlPage( $page, $num );
+  unless ( $path eq '' || $path =~ /(\/)$/ ){ $path .= '/'; }
+
+  my @state = stat( $STEELBLUESETTING::DOCROOT . '/' . $path );
+
+  my $html = '';
+
+  $html .= '      <div class="filelist">' . "\n";
+  $html .= $pagehtml;
+  $html .= '        <table>' . "\n";
+
+  $html .= sprintf( '          <caption>%s</caption>', $path || './' ) . "\n";
+
+  $html .= '          <thead>' . "\n";
+  $html .= sprintf( '            <tr><td class="checkbox" id="checkbox"><input type="checkbox" /></td><td class="filename" id="filename">Name</td><td class="size" id="size">size</td><td class="time" id="time">Update</td><td class="permission" id="permission">Permission</td><td class="dl" id="dl">DL</td></tr>%s', "\n" );
+  $html .= '          </thead>' . "\n";
+
+  $html .= '          <tfoot>' . "\n";
+  $html .= sprintf( '            <tr><td></td><td class="pwd">./</td><td colspan="2" class="items">Directory:<b>%d</b> File:<b>%d</b> Total:<b>%d</b></td><td class="permission">%s</td><td></td></tr>%s', $dnum, $fnum, $num, &Permission( $state[ 2 ] ), "\n" );
+  $html .= '          </tfoot>' . "\n";
+
+  # Directory.
+
+  my $i = 0;
+  if ( $list[ 0 ] eq '../' )
+  {
+    $html .= '          <tbody class="directorylist">' . "\n";
+    my $dirname = shift( @list );
+    @state = stat( $STEELBLUESETTING::DOCROOT . '/' . $path . $dirname );
+    $html .= sprintf( '            <tr><td class="checkbox"></td><td class="filename"><a href="%s?%s">%s</a></td><td class="size">-</td><td class="time">-</td><td class="permission">%s</td><td class="dl">-</td></tr>%s',
+                      $STEELBLUESETTING::SCRIPT, 'path=' . ( $dirname eq '../' ? &UpDirectory( $path ) : &URLEncode( $path . $dirname )), $dirname,
+                      &Permission( $state[ 2 ] ),
+                      "\n" );
+    $i = 1;
+    $html .= '          </tbody>' . "\n";
+  }
+
+  $html .= '          <tbody class="directorylist" id="directorylist">' . "\n";
+
+  for( ; $i < $dnum ; ++$i )
+  {
+    my $dirname = shift( @list );
+    @state = stat( $STEELBLUESETTING::DOCROOT . '/' . $path . $dirname );
+    $html .= sprintf( '            <tr><td class="checkbox"><input type="checkbox" name="list" value="%s" /></td><td class="filename"><a href="%s?%s">%s</a></td><td class="size">-</td><td class="time">-</td><td class="permission">%s</td><td class="dl">-</td></tr>%s',
+                      &URLEncode( $dirname ),
+                      $STEELBLUESETTING::SCRIPT, 'path=' . ( $dirname eq '../' ? &UpDirectory( $path ) : &URLEncode( $path . $dirname )), $dirname,
+                      &Permission( $state[ 2 ] ),
+                      "\n" );
+  }
+
+  $html .= '          </tbody>' . "\n";
+
+  # File.
+  $html .= '          <tbody class="filelist" id="filelist">' . "\n";
+  foreach ( @list )
+  {
+    my @state = stat( $STEELBLUESETTING::DOCROOT . '/' . $path . $_ );
+    my $renewtime = &FormatTime( $state[ 9 ] );
+
+    $html .= sprintf( '            <tr><td class="checkbox"><input type="checkbox" name="list" value="%s"></td><td class="filename"><a href="%s?%s">%s</a></td><td class="size">%s</td><td class="time">%s</td><td class="permission">%s</td><td class="dl"><a href="%s?%s">DL</a></td></tr>%s',
+                      &URLEncode( $_ ),
+                      $STEELBLUESETTING::SCRIPT, 'path=' . &URLEncode( $path . $_), $_,
+                      $state[ 7 ],
+                      $renewtime,
+                      &Permission( $state[ 2 ] ),
+                      $STEELBLUESETTING::DOWNLOADER, 'p=' . &URLEncode( $path . $_),
+                      "\n" );
+  }
+  $html .= '          </tbody>' . "\n";
+
+  $html .= '        </table>' . "\n";
+  $html .= $pagehtml;
+  $html .= '      </div>' . "\n";
 
   return $html;
 }
@@ -289,6 +377,118 @@ sub HtmlFileView()
   }
 
   $html .= '</div>';
+
+  return $html;
+}
+
+sub HtmlDirectoryOperation()
+{
+  my ( $path ) = ( @_ );
+  my $html = '';
+
+  my $isfile = -f $STEELBLUESETTING::DOCROOT . '/' . $path;
+
+  $html .= sprintf( '      <div class="diroperation">' ) . "\n";
+  $html .= sprintf( '        <h3>Operation</h3>' ) . "\n";
+
+  $html .= sprintf( '          <input type="hidden" name="path" value="%s" id="path" />', &URLEncode( $path ) ) . "\n";
+  $html .= sprintf( '          <input type="hidden" name="ref" value="%s" />', &URLEncode( $STEELBLUESETTING::SCRIPT . '?path=' . &URLEncode( $path ) ) ) . "\n";
+  $html .= sprintf( '          <table>' ) . "\n";
+
+  if ( $isfile )
+  {
+    # cp
+    $html .= sprintf( '            <tr><td>Copy name:</td><td><input name="new" /></td><td><input class="submit" type="submit" name="mode" value="cp" /></td></tr>' );
+  } else
+  {
+    # mkdir
+    $html .= sprintf( '            <tr><td>Directory name:</td><td><input name="list" /></td><td><input class="submit" type="submit" name="mode" value="mkdir" /></td></tr>' );
+  }
+
+  # chmod
+  $html .= sprintf( '            <tr><td>Permission:</td><td>' );
+
+  my $permission = $STEELBLUESETTING::DIRPARMISIION;
+  if ( $isfile )
+  {
+    my ( @state ) = stat( $STEELBLUESETTING::DOCROOT . '/' . $path );
+    $permission = $state[ 2 ];
+  }
+  my ( $owner, $group, $user ) = split( //, substr((sprintf "%03o", $permission), -3) );
+
+  $html .= sprintf( '<select name="owner">%s</select>', &HtmlOptionPermission( $owner ) );
+  $html .= sprintf( '<select name="group">%s</select>', &HtmlOptionPermission( $group ) );
+  $html .= sprintf( '<select name="user">%s</select>',  &HtmlOptionPermission( $user ) );
+
+  $html .= sprintf( '</td><td><input class="submit" type="submit" name="mode" value="chmod" /></td></tr>' ) . "\n";
+
+  # mv
+  if ( $isfile )
+  {
+    $html .= sprintf( '            <tr><td>Rename:</td><td><input type="text" name="new" />' );
+  } else
+  {
+    $html .= sprintf( '            <tr><td>Move:</td><td><select name="new">' );
+    $html .= &HtmlOptionMvDirectory( $path );
+    $html .= '</select>';
+  }
+  $html .= sprintf( '</td><td><input class="submit" type="submit" name="mode" value="mv" /></td></tr>' );
+
+  # rm
+  $html .= sprintf( '            <tr><td>Delete file:</td><td></td><td><input class="submit" type="submit" name="mode" value="rm" /></td></tr>' );
+
+  $html .= sprintf( '          </table>' ) . "\n";
+
+  $html .= sprintf( '      </div>' ) . "\n";
+
+  return $html;
+}
+
+sub HtmlOptionPermission()
+{
+  my ( $select ) = ( @_, 0 );
+  my $selectops = '';
+
+  my @pname = ( '---', '--x', '-w-', '-wx', 'r--', 'r-x','rw-', 'rwx' );
+
+  my $p;
+  for ( $p = 7 ; $p >= 0 ; --$p)
+  {
+    my $selected = '';
+    if ( $select == $p ){ $selected = ' selected="selected"'; }
+    $selectops .= sprintf( '<option value="%d"%s>(%d)%s</option>', $p, $selected, $p, $pname[ $p ] );
+  }
+
+  return $selectops;
+}
+
+sub HtmlOptionMvDirectory()
+{
+  my ( $path ) = ( @_ );
+  my @dir;
+
+  if ( $path eq '' || $path =~ /\.\.\/{0,1}/)
+  {
+    $path = $STEELBLUESETTING::DOCROOT . '/';
+    $path =~ s/\/+/\//g;
+  } else
+  {
+    $path = $STEELBLUESETTING::DOCROOT . '/' . $path;
+    $path =~ s/\/+/\//g;
+    $path =~ s/\/\.\//\//g;
+    unless ( $path =~ /(\/)$/ ){ $path .= '/'; }
+  }
+
+  my $html = '';
+
+  push( @dir, &LoadDirectory( $path, '', 0, -1 ) );
+  foreach ( @dir )
+  {
+    if ( -d $path . $_ )
+    {
+      $html .= sprintf( '<option value="%s">%s</option>', &URLEncode( $_ ), $_ );
+    }
+  }
 
   return $html;
 }

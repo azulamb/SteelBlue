@@ -1,7 +1,8 @@
-#!/usr/bin/perl
+#!/usr/bin/perl --
 
 use strict;
 use warnings;
+no warnings qw(once);
 use CGI;
 
 ########################################
@@ -42,7 +43,7 @@ sub Main()
   if ( $path =~ /(\.\.)/ || $path =~ /^(\/)/ ){ return &Error( $ref, 'Upload path error.' ); }
   if ( $path eq '' ){ $path = './'; }
 
-  if ( $upfile =~ /(\/)$/ || $upfile =~ /([^ \da-zA-Z\_\-\+\=\(\) \"\'\:\;\&\%\$\#\@\!\?\<\>\[\]\{\}\.\,])/ ){ return &Error( $ref, sprintf( 'File name illegal.(%s)', $upfile ) ); }
+  if ( !( $upfile ) || $upfile =~ /(\/)$/ || $upfile =~ /([^ \da-zA-Z\_\-\+\=\(\) \"\'\:\;\&\%\$\#\@\!\?\<\>\[\]\{\}\.\,])/ ){ return &Error( $ref, sprintf( 'File name illegal.(%s)', ($upfile?$upfile:'nofile') ) ); }
 
   # Directory check & create filepath;
   unless ( -d $STEELBLUESETTING::DOCROOT . '/' . $path )
@@ -71,14 +72,14 @@ sub Main()
     $path .= $name;
   } else
   {
-    my $name = $upfile;
+    my ( $name ) = ( $upfile, '' );
     $path .= ( ($path =~ /(\/)$/) ? '' : '/' ) . $name;
   }
 
   $path = $STEELBLUESETTING::DOCROOT . '/' . $path;
 
   # File copy.
-  if ( &CopyFile( $path, $upfile ) ){ return &Error( $ref, sprintf( 'Cannot create file.(%s)', $upfile ) ); }
+  if ( !($upfile) || &CopyFile( $path, $upfile ) ){ return &Error( $ref, sprintf( 'Cannot create file.(%s)', $upfile ) ); }
 
   close( $upfile );
 
@@ -124,7 +125,7 @@ sub Error()
 
 sub Decode()
 {
-  my ( $val ) = ( @_ );
+  my ( $val ) = ( @_, "" );
   $val =~ tr/+/ /;
   $val =~ s/%([0-9a-fA-F][0-9a-fA-F])/pack('C', hex($1))/eg;
   return $val;
