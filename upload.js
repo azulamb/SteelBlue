@@ -6,8 +6,9 @@ var SteelBlue;
             this.reader = null;
             this.callback = null;
 
+            // TODO:
             if (FileUploader.boundary == "") {
-                FileUploader.boundary = "----SDDUploaderFormBoundaryGhexpz6PUOeIP3Sc";
+                FileUploader.boundary = "----SDDUploaderFormBoundary" + this.RandomString(20);
             }
             FileUploader.self = this;
         }
@@ -35,16 +36,22 @@ var SteelBlue;
         FileUploader.prototype.FileLoader = function (event, path) {
             var data = "";
 
+            // Multipart header.
             this.MultipartHeader();
 
+            // File data.
             data += this.MultipartFile('upfile', this.file);
 
+            // Path data.
             data += this.MultipartData('path', path);
 
+            // Multipart footer.
             data += this.MultipartFooter();
 
+            // Send data.
             this.httpobj.sendAsBinary(data);
 
+            // Result.
             if (this.callback != null) {
                 this.callback(this.httpobj.responseText);
             }
@@ -100,6 +107,14 @@ var SteelBlue;
             str += this.reader.result + "\r\n";
 
             return str;
+        };
+        FileUploader.prototype.RandomString = function (n) {
+            var a = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-!_#$'.split('');
+            var s = '';
+            for (var i = 0; i < n; i++) {
+                s += a[Math.floor(Math.random() * a.length)];
+            }
+            return s;
         };
         FileUploader.boundary = "";
         return FileUploader;
@@ -164,6 +179,7 @@ var SteelBlue;
         FileUploaderManagement.prototype.NextUpload = function (msg) {
             var result = JSON.parse(msg);
 
+            // Update progress bar.
             var loader = document.getElementById('loader');
 
             var failid = '';
