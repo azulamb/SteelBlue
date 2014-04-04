@@ -17,7 +17,7 @@ module SteelBlue
       // TODO:
       if ( FileUploader.boundary == "" )
       {
-        FileUploader.boundary = "----SDDUploaderFormBoundaryGhexpz6PUOeIP3Sc";
+        FileUploader.boundary = "----SDDUploaderFormBoundary" + this.RandomString( 20 );
       }
       FileUploader.self = this;
     }
@@ -127,6 +127,16 @@ module SteelBlue
       str += this.reader.result + "\r\n";
 
       return str;
+    }
+    private RandomString( n:number ):string
+    {
+      var a:string[] = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-!_#$'.split('');
+      var s:string = '';
+      for (var i = 0; i < n; i++)
+      {
+        s += a[ Math.floor( Math.random() * a.length ) ];
+      }
+      return s;
     }
   } // End class FileUploader
 
@@ -238,13 +248,7 @@ module SteelBlue
 
 }
 
-function Init()
+function Init()//TODO: fix
 {
   new SteelBlue.FileUploaderManagement( 'dragupload', 'dragupload', 'path' );
 }
-
-
-
-
-
-
