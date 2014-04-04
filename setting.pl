@@ -22,7 +22,7 @@ our @CMD = ( 'chmod', 'mkdir', 'cp', 'rm', 'mv' );
 ########################################
 
 # Page title
-our $TITLE = 'HACK U WEB FILER';
+our $TITLE = 'STEEL BLUE';
 
 # Script path.
 our $SCRIPT = './index.cgi';
