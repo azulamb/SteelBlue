@@ -43,7 +43,8 @@ sub Main()
   if ( $path =~ /(\.\.)/ || $path =~ /^(\/)/ ){ return &Error( $ref, 'Upload path error.' ); }
   if ( $path eq '' ){ $path = './'; }
 
-  if ( !( $upfile ) || $upfile =~ /(\/)$/ || $upfile =~ /([^ \da-zA-Z\_\-\+\=\(\) \"\'\:\;\&\%\$\#\@\!\?\<\>\[\]\{\}\.\,])/ ){ return &Error( $ref, sprintf( 'File name illegal.(%s)', ($upfile?$upfile:'nofile') ) ); }
+  #if ( !( $upfile ) || $upfile =~ /(\/)$/ || $upfile =~ /([^ \da-zA-Z\_\-\+\=\(\) \"\'\:\;\&\%\$\#\@\!\?\<\>\[\]\{\}\.\,])/ ){ return &Error( $ref, sprintf( 'File name illegal.(%s)', ($upfile?$upfile:'nofile') ) ); }
+  if ( !( $upfile ) || $upfile =~ /(\/)$/ ){ return &Error( $ref, sprintf( 'File name illegal.(%s)', ($upfile?$upfile:'nofile') ) ); }
 
   # Directory check & create filepath;
   unless ( -d $STEELBLUESETTING::DOCROOT . '/' . $path )
@@ -54,7 +55,7 @@ sub Main()
     if ( $path =~ /(\/)$/ )
     {
       # Path is directory.
-      $name = $upfile;
+      $name = &Decode( $upfile );
     } else
     {
       # Path is filepath.
@@ -72,14 +73,14 @@ sub Main()
     $path .= $name;
   } else
   {
-    my ( $name ) = ( $upfile, '' );
+    my ( $name ) = ( &Decode( $upfile ), '' );
     $path .= ( ($path =~ /(\/)$/) ? '' : '/' ) . $name;
   }
 
   $path = $STEELBLUESETTING::DOCROOT . '/' . $path;
 
   # File copy.
-  if ( !($upfile) || &CopyFile( $path, $upfile ) ){ return &Error( $ref, sprintf( 'Cannot create file.(%s)', $upfile ) ); }
+  if ( !($upfile) || &CopyFile( $path, $upfile ) ){ return &Error( $ref, sprintf( 'Cannot create file.(%s)', $path ) ); }
 
   close( $upfile );
 
